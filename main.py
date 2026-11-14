@@ -27,7 +27,7 @@ def send_email_alert(subject, body):
     recipient = os.environ.get("RECIPIENT_EMAIL", sender).strip()
 
     if not sender or not password:
-        raise ValueError("Missing SENDER_EMAIL or SENDER_PASSWORD environment variables.")
+        raise ValueError("Missing SENDER_EMAIL or GMAIL_APP_PASSWORD or RECIPIENT_EMAIL environment variables.")
 
     msg = EmailMessage()
     msg["Subject"] = subject
