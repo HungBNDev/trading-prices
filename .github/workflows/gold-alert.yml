@@ -1,39 +1,30 @@
-name: XAUUSD price email
+name: XAUUSD 15-Minute Email Update
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
-  workflow_dispatch:
+    - cron: '*/5 * * * *' # Triggers at minutes 00, 15, 30, and 45 of every hour
+  workflow_dispatch:       # Allows manual "Run workflow" testing in GitHub
 
 jobs:
-  send-price:
+  send-gold-price:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch XAU/USD price
-        id: gold
-        run: |
-          resp=$(curl -fsS --retry 3 --max-time 15 https://api.gold-api.com/price/XAU/USD)
-          echo "$resp"
-          price=$(echo "$resp" | jq -r '.price')
-          updated=$(echo "$resp" | jq -r '.updatedAtReadable // .updatedAt // "n/a"')
-          if [ -z "$price" ] || [ "$price" = "null" ]; then
-            echo "Could not parse price" >&2
-            exit 1
-          fi
-          echo "price=$price" >> "$GITHUB_OUTPUT"
-          echo "updated=$updated" >> "$GITHUB_OUTPUT"
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Send mail
-        uses: dawidd6/action-send-mail@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          secure: true
-          username: ${{ secrets.SENDER_EMAIL }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "XAUUSD: ${{ steps.gold.outputs.price }}"
-          to: ${{ secrets.RECIPIENT_EMAIL }}
-          from: "Gold Price Bot <${{ secrets.SENDER_EMAIL }}>"
-          body: |
-            XAU/USD price: ${{ steps.gold.outputs.price }}
-            Updated: ${{ steps.gold.outputs.updated }}
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch XAU/USD and send email
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python main.py
