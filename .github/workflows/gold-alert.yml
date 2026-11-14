@@ -2,7 +2,7 @@ name: XAUUSD 15-Minute Email Update
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Triggers at minutes 00, 15, 30, and 45 of every hour
+    - cron: '17/15 * * * *' # Triggers at minutes 00, 15, 30, and 45 of every hour
   workflow_dispatch:       # Allows manual "Run workflow" testing in GitHub
 
 jobs:
