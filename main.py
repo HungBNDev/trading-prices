@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import ssl
 import smtplib
 import requests
 from email.message import EmailMessage
@@ -21,12 +22,12 @@ def get_xau_price():
         return None
 
 def send_email_alert(subject, body):
-    sender = os.environ.get("SENDER_EMAIL")
-    password = os.environ.get("SENDER_PASSWORD")
-    recipient = os.environ.get("RECIPIENT_EMAIL", sender)
+    sender = os.environ.get("SENDER_EMAIL", "").strip()
+    password = os.environ.get("SENDER_PASSWORD", "").replace(" ", "").strip()
+    recipient = os.environ.get("RECIPIENT_EMAIL", sender).strip()
 
-    if not sender or not password or not recipient:
-        raise ValueError("Missing SENDER_EMAIL or SENDER_PASSWORD or RECIPIENT_EMAIL environment variables.")
+    if not sender or not password:
+        raise ValueError("Missing SENDER_EMAIL or SENDER_PASSWORD environment variables.")
 
     msg = EmailMessage()
     msg["Subject"] = subject
@@ -34,7 +35,12 @@ def send_email_alert(subject, body):
     msg["To"] = recipient
     msg.set_content(body)
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 587, timeout=30) as server:
+    context = ssl.create_default_context()
+    # Use smtplib.SMTP (NOT SMTP_SSL) for port 587
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
+        server.ehlo()
+        server.starttls(context=context)
+        server.ehlo()
         server.login(sender, password)
         server.send_message(msg)
 
