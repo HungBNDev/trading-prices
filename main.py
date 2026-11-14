@@ -34,7 +34,7 @@ def send_email_alert(subject, body):
     msg["To"] = recipient
     msg.set_content(body)
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+    with smtplib.SMTP_SSL("smtp.gmail.com", 587, timeout=30) as server:
         server.login(sender, password)
         server.send_message(msg)
 
