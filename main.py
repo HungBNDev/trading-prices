@@ -23,7 +23,7 @@ def get_xau_price():
 
 def send_email_alert(subject, body):
     sender = os.environ.get("SENDER_EMAIL", "").strip()
-    password = os.environ.get("SENDER_PASSWORD", "").replace(" ", "").strip()
+    password = os.environ.get("GMAIL_APP_PASSWORD", "").replace(" ", "").strip()
     recipient = os.environ.get("RECIPIENT_EMAIL", sender).strip()
 
     if not sender or not password:
